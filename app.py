@@ -1,5 +1,6 @@
 import os
 import pandas as pd
+import streamlit as st
 from dotenv import load_dotenv
 from openai import OpenAI
 from selenium import webdriver
@@ -12,39 +13,42 @@ from selenium.webdriver.support import expected_conditions as EC
 from bs4 import BeautifulSoup
 import html2text
 import json
-import streamlit as st
 import re
 import time
 
 
 
 load_dotenv()
+
+
+st.set_page_config(layout= "centered")
 st.write("DeepMentor")
+url = st.text_input("paste a url or link below:", placeholder = "https://example.com")
 
-def selenium_setup():
-    options = Options()
-    service = Service("chromedriver.exe")
-    driver = webdriver.Chrome(service = service, options=options)
-    return driver
-
-def webscrape(url):
-    driver = selenium_setup()
-
-    try:
-        driver.get(url)
-        time.sleep(1)
-        html = driver.page_source
-        return html
-    finally:
-        driver.quit()
+if st.button("Process URL"):
+    if url :
+        st.success(f"URL recieved : {url}")
+    else:
+        st.error("Please a valid URL")
         
-def parse_html(html_content):
-    soup = str(BeautifulSoup(html_content,'html_parser'))
-    return soup
+st.subheader("💬 Chat with the Assistant")
 
-def markdown_converter(html_content):
-    parsed_html = parse_html(html_content)
-    markdown_converter = html2text.HTML2Text()
-    markdown_content = markdown_converter.handle(parsed_html)
-    return markdown_content
-
+if "messages" not in st.session_state:
+    st.session_state.messages = []
+    
+for message in st.session_state.messages:
+    with st.chat_message(message["role"]):
+        st.markdown(message["content"])
+        
+user_prompt = st.chat_input("Ask anything about the link....")
+if user_prompt:
+    st.write(".......")
+    st.session_state.messages.append({"role":"user", "content":user_prompt})
+    with st.chat_message("user"):
+        st.markdown(user_prompt)
+    
+    response = f"processing your question , based on the the URL :{url}"
+    
+    st.session_state.messages.append({"role": "assistant", "content": response})
+    with st.chat_message("assistant"):
+        st.markdown(response)
