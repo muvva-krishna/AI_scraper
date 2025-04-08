@@ -15,7 +15,7 @@ import html2text
 import json
 import re
 import time
-
+from main import scrape_with_requests
 
 
 load_dotenv()
@@ -26,10 +26,16 @@ st.write("DeepMentor")
 url = st.text_input("paste a url or link below:", placeholder = "https://example.com")
 
 if st.button("Process URL"):
-    if url :
-        st.success(f"URL recieved : {url}")
+    if url:
+        try:
+            scraped = scrape_with_requests(url)
+            st.success("Scraping successful.")
+            st.session_state["scraped_content"] = scraped.markdown  # or .text or .html as needed
+            st.markdown(st.session_state["scraped_content"])
+        except Exception as e:
+            st.error(f"Error processing the URL: {e}")
     else:
-        st.error("Please a valid URL")
+        st.error("Please enter a valid URL.")
         
 st.subheader("💬 Chat with the Assistant")
 
@@ -42,13 +48,11 @@ for message in st.session_state.messages:
         
 user_prompt = st.chat_input("Ask anything about the link....")
 if user_prompt:
-    st.write(".......")
     st.session_state.messages.append({"role":"user", "content":user_prompt})
     with st.chat_message("user"):
         st.markdown(user_prompt)
-    
-    response = f"processing your question , based on the the URL :{url}"
-    
+    response = []
     st.session_state.messages.append({"role": "assistant", "content": response})
     with st.chat_message("assistant"):
         st.markdown(response)
+
