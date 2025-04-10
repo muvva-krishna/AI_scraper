@@ -16,5 +16,4 @@ openpyxl
 openai
 python-dotenv
 streamlit
-streamlit-tags
-groq      
+streamlit-tags   
